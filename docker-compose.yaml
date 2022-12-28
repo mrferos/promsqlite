@@ -1,0 +1,58 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus:v2.41.0
+    command:
+      - '--config.file=/opt/prometheus.yaml'
+    ports:
+      - "9090:9090"
+    volumes:
+      - $PWD/prometheus.yaml:/opt/prometheus.yaml
+    networks:
+      - promsqlite
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - promsqlite
+  avalanche:
+    image: quay.io/freshtracks.io/avalanche:latest
+    command:
+      - --metric-count=1000
+      - --series-count=50
+      - --port=9001
+    ports:
+      - "9001:9001"
+    networks:
+      - promsqlite
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    working_dir: /opt/app
+    command:
+      - nodemon
+      - --watch
+      - '/opt/app/*.go'
+      - --ext
+      - go
+      - --signal
+      - SIGTERM
+      - --exec
+      - 'go'
+      - run
+      - /opt/app/*.go
+    ports:
+      - "8080:8080"
+    platform: linux/x86_64
+    volumes:
+      - $PWD:/opt/app
+    networks:
+      - promsqlite
+networks:
+  promsqlite: {}
+volumes:
+  grafana-data: {}

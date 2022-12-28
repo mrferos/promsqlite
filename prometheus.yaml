@@ -1,0 +1,22 @@
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+remote_write:
+  - url: http://app:8080/api/v1/remote_write
+
+remote_read:
+  - url: http://app:8080/api/v1/remote_read
+    read_recent: true
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "avalanche"
+    static_configs:
+      - targets:  ["avalanche:9001"]
